@@ -15,7 +15,7 @@
     <img src="https://img.shields.io/github/v/release/ElectroGamesYT/EasyEditor?include_prereleases" alt="Releases" />
   </a>
   <a style="text-decoration:none">
-    <img src="https://img.shields.io/badge/platform-windows%2010%20%7C%20uwp-yellow.svg?style=flat-square" alt="Platform" />
+    <img src="https://img.shields.io/badge/platform-windows-blue" alt="Platform" />
   </a>
 </p>
 
