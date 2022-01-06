@@ -19,7 +19,7 @@
   </a>
 </p>
 
-## What are the features of EasyEditor?
+## What are the features of Easy Editor?
 
 * Modern design.
 * Fast and lightweight.
