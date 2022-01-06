@@ -8,7 +8,7 @@
   A Lightweight Text/Code Editor Written in C# Using WinForms
 </p>
 <p align="center">
-  <a style="text-decoration:none" href="https://www.microsoft.com/store/apps/9nhl4nsc67wm">
+  <a style="text-decoration:none">
     <img src="https://img.shields.io/github/downloads/ElectroGamesYT/EasyEditor/total" alt="Downloads" />
   </a>
   <a style="text-decoration:none" href="https://github.com/ElectroGamesYT/EasyEditor/releases">
