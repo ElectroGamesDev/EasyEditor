@@ -2,7 +2,7 @@
   <img width="128" align="center" src="EasyEditor.ico">
 </p>
 <h1 align="center">
-  Notepads
+  Easy Editor
 </h1>
 <p align="center">
   A Lightweight Text/Code Editor Written in C# Using WinForms
