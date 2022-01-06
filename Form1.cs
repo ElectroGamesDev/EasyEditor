@@ -1,21 +1,32 @@
 using Ookii.Dialogs.WinForms;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace EasyEditor
 {
     public partial class Form1 : Form
     {
-        string[] storedFiles;
+        bool? fileOpened = false;
         string? filePath = "Untitled.txt";
         string? fileName = "Untitled.txt";
         string? saveStatus = "Unsaved";
         private Rectangle originalFormSize;
         private Rectangle textBoxOriginalRectangle;
         private Rectangle menuStripOriginalRectangle;
+        int fileCounter;
 
         public Form1()
         {
             InitializeComponent();
-            Text = saveStatus + " | " + filePath + " - Easy Editor";
+            if (saveStatus == "Unsaved")
+            {
+                Text = "Unsaved | " + filePath + " - Easy Editor";
+            }
+            else
+            {
+                Text = filePath + " - Easy Editor";
+
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -127,14 +138,15 @@ namespace EasyEditor
         public void openFile(string? path = "Untitled.txt")
         {
             filePath = path;
-            fileName = Path.GetFileName(path);
             if (path == "Untitled.txt")
             {
+                fileName = Path.GetFileName("Untitled.txt");
                 var folderBrowser = new VistaOpenFileDialog();
                 if (folderBrowser.ShowDialog() != DialogResult.OK) return;
                 filePath = folderBrowser.FileName;
                 fileName = Path.GetFileName(filePath);
             }
+            else fileName = Path.GetFileName(path); fileOpened = true; 
             string file = File.ReadAllText(filePath);
             textBox.Text = file;
             Text = filePath + " - Easy Editor";
@@ -221,14 +233,14 @@ namespace EasyEditor
             {
                 Directory.CreateDirectory(dataPath + @"\Temp");
             }
-            if (!File.Exists(dataPath + @"\Temp\Recent Files.json"))
+            if (!File.Exists(dataPath + @"\Temp\Recent Files.txt"))
             {
-                var createFile = File.Create(dataPath + @"\Temp\Recent Files.json");
+                var createFile = File.Create(dataPath + @"\Temp\Recent Files.txt");
                 createFile.Close();
             }
-            if (!File.Exists(dataPath + @"\Temp\Opened Files.json"))
+            if (!File.Exists(dataPath + @"\Temp\Opened Files.txt"))
             {
-                var createFile = File.Create(dataPath + @"\Temp\Opened Files.json");
+                var createFile = File.Create(dataPath + @"\Temp\Opened Files.txt");
                 createFile.Close();
             }
             if (!Directory.Exists(dataPath + @"\Opened Files"))
@@ -237,37 +249,126 @@ namespace EasyEditor
             }
         }
 
-        public void storeFiles()
+        public static string getUniqueKey(int size)
         {
-            if (textBox.TextLength != 0 && saveStatus == "Unsaved")
+            char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
+            byte[] data = new byte[4 * size];
+            using (var crypto = RandomNumberGenerator.Create())
+            {
+                crypto.GetBytes(data);
+            }
+            StringBuilder result = new StringBuilder(size);
+            for (int i = 0; i < size; i++)
+            {
+                var rnd = BitConverter.ToUInt32(data, i * 4);
+                var idx = rnd % chars.Length;
+
+                result.Append(chars[idx]);
+            }
+
+            return result.ToString();
+        }
+
+        public async Task storeFiles()
+        {
+            if (textBox.TextLength != 0 || fileOpened == true)
             {
                 createBaseFiles();
                 string dataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\EasyEditor";
-                if (!File.Exists(dataPath + @"\Opened Files\" + fileName))
+                if (saveStatus == "Saved")
                 {
-                    var createFile = File.Create(dataPath + @"\Opened Files\" + fileName);
-                    createFile.Close();
+                    List<string> linesList = new List<string>();
+                    linesList.Add(filePath + "|Saved");
+                    await File.WriteAllLinesAsync(dataPath + @"\Temp\Opened Files.txt", linesList);
                 }
-                File.WriteAllText(dataPath + @"\Opened Files\" + fileName, textBox.Text + "\n" + filePath);
+                string key = getUniqueKey(10);
+                if (fileOpened == false && saveStatus == "Unsaved")
+                {
+                    var createFile = File.Create(dataPath + @"\Opened Files\" + key + ".txt");
+                    createFile.Close();
+                    File.WriteAllText(dataPath + @"\Opened Files\" + key + ".txt", textBox.Text);
+                    List<string> linesList = new List<string>();
+                    linesList.Add("None" + "|" + key + ".txt");
+                    await File.WriteAllLinesAsync(dataPath + @"\Temp\Opened Files.txt", linesList);
+                }
+                else if (fileOpened == true && saveStatus == "Unsaved")
+                {
+                    var createFile = File.Create(dataPath + @"\Opened Files\" + key + ".txt");
+                    createFile.Close();
+                    File.WriteAllText(dataPath + @"\Opened Files\" + key + ".txt", textBox.Text);
+                    List<string> linesList = new List<string>();
+                    linesList.Add(filePath + "|" + key + ".txt");
+                    await File.WriteAllLinesAsync(dataPath + @"\Temp\Opened Files.txt", linesList);
+                }
             }
         }
 
-        public void restoreFiles()
+        public async Task restoreFiles()
         {
             string dataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\EasyEditor";
-            string[] files = Directory.GetFiles(dataPath + @"\Opened Files", "*.txt");
-            string realFilePath;
-            foreach (string file in files)
+            //string[] files = Directory.GetFiles(dataPath + @"\Opened Files", "*.txt");
+            //string realFilePath;
+            //foreach (string file in files)
+            //{
+            //    System.Diagnostics.Debug.WriteLine("Restored " + file);
+            //    realFilePath = File.ReadLines(file).Last();
+            //    List<string> lines = File.ReadAllLines(file).ToList();
+            //    File.WriteAllLines(file, lines.GetRange(0, lines.Count - 1).ToArray());
+            //    openFile(file);
+            //    filePath = realFilePath;
+            //    if (saveStatus == "Unsaved")
+            //    {
+            //        Text = "Unsaved | " + filePath + " - Easy Editor";
+            //    }
+            //    else
+            //    {
+            //        Text = filePath + " - Easy Editor";
+
+            //    }
+            //    File.Delete(file);
+            //}
+            fileCounter = 0;
+            if (!File.ReadAllText(dataPath + @"\Temp\Opened Files.txt").ToString().ToLower().Contains('|')) return;
+            foreach (string line in File.ReadLines(dataPath + @"\Temp\Opened Files.txt"))
             {
-                System.Diagnostics.Debug.WriteLine("Restored " + file);
-                realFilePath = File.ReadLines(file).Last();
-                List<string> lines = File.ReadAllLines(file).ToList();
-                File.WriteAllLines(file, lines.GetRange(0, lines.Count - 1).ToArray());
-                openFile(file);
-                filePath = realFilePath;
-                Text = saveStatus + " | " + filePath + " - Easy Editor";
-                File.Delete(file);
+                string[] key = line.Split('|');
+                string path = key[0];
+                string tempPath = dataPath + @"\Opened Files\" + key[1];
+
+                // If the file is saved
+                if (key[1] == "Saved")
+                {
+                    saveStatus = "Saved";
+                    Text = filePath + " - Easy Editor";
+                    openFile(path);
+                    fileCounter++;
+                    return;
+                }
+
+                if (path == "None")
+                {
+                    openFile(tempPath);
+                    Text = "Unsaved | " + "Untitled.txt" + " - Easy Editor";
+                    filePath = "Untitled.txt";
+                    fileName = "Untitled.txt";
+                    saveStatus = "Unsaved";
+                    fileOpened = false;
+                    File.Delete(tempPath);
+                    fileCounter++;
+                    return;
+                }
+
+                // If the file is not saved
+                openFile(tempPath);
+                File.Delete(tempPath);
+                saveStatus = "Unsaved";
+                filePath = path;
+                fileName = Path.GetFileName(path);
+                Text = "Unsaved | " + path + " - Easy Editor";
+                fileCounter++;
             }
+            string[] removeLines = { "" };
+            await File.WriteAllLinesAsync(dataPath + @"\Temp\Opened Files.txt", removeLines);
         }
 
         private void menuStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
