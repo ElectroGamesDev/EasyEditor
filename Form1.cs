@@ -306,27 +306,6 @@ namespace EasyEditor
         public async Task restoreFiles()
         {
             string dataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"\EasyEditor";
-            //string[] files = Directory.GetFiles(dataPath + @"\Opened Files", "*.txt");
-            //string realFilePath;
-            //foreach (string file in files)
-            //{
-            //    System.Diagnostics.Debug.WriteLine("Restored " + file);
-            //    realFilePath = File.ReadLines(file).Last();
-            //    List<string> lines = File.ReadAllLines(file).ToList();
-            //    File.WriteAllLines(file, lines.GetRange(0, lines.Count - 1).ToArray());
-            //    openFile(file);
-            //    filePath = realFilePath;
-            //    if (saveStatus == "Unsaved")
-            //    {
-            //        Text = "Unsaved | " + filePath + " - Easy Editor";
-            //    }
-            //    else
-            //    {
-            //        Text = filePath + " - Easy Editor";
-
-            //    }
-            //    File.Delete(file);
-            //}
             fileCounter = 0;
             if (!File.ReadAllText(dataPath + @"\Temp\Opened Files.txt").ToString().ToLower().Contains('|')) return;
             foreach (string line in File.ReadLines(dataPath + @"\Temp\Opened Files.txt"))
