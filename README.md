@@ -1,5 +1,3 @@
-******* 📣 Easy Editor has been abandoned. *******
-
 <p align="center">
   <img width="128" align="center" src="EasyEditor.ico">
 </p>
