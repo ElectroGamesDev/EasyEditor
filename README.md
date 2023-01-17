@@ -1,3 +1,5 @@
+******* 📣 Easy Editor has been abandoned. *******
+
 <p align="center">
   <img width="128" align="center" src="EasyEditor.ico">
 </p>
@@ -28,4 +30,4 @@
 * View recently opened files.
 * Restore files if you closed the program while they are still open.
 
-******* 📣 Easy Editor is still under active development. *******
+******* 📣 Easy Editor has been abandoned. *******
